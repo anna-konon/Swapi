@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Swapi people list</title>
+    <link href="https://fonts.googleapis.com/css?family=Oswald:200,400,600,700&display=swap&subset=latin-ext" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+<body>
+    <div id="app" class="wrapper">
+        <header>
+            <img src="Star_Wars_Logo.png" alt="logo" class="center"/>
+            <h1>The Star Wars API People List</h1>
+        </header>
+        <h3 class="people-list__title">People list (hover a person to see the details)</h3>
+        <div id="js-peopleList" class="people-list">
+            <div class="flip-card" v-for="person in peopleList">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front"><h3>{{ person.name }}</h3></div>
+                    <div class="flip-card-back">
+                        <p><span class="element-key">height: </span class="element-key"> <span>{{ person.height }}</span></p>
+                        <p><span class="element-key">mass: </span class="element-key"> <span>{{ person.mass }}</span></p>
+                        <p><span class="element-key">hair_color: </span class="element-key"> <span>{{ person.hair_color }}</span></p>
+                        <p><span class="element-key">skin_color: </span class="element-key"> <span>{{ person.skin_color }}</span></p>
+                        <p><span class="element-key">eye_color: </span class="element-key"> <span>{{ person.eye_color }}</span></p>
+                        <p><span class="element-key">birth_year: </span class="element-key"> <span>{{ person.birth_year }}</span></p>
+                        <p><span class="element-key">gender: </span class="element-key"> <span>{{ person.gender }}</span></p>
+                        <p><span class="element-key">homeworld: </span class="element-key"> <span>{{ person.homeworld }}</span></p>
+                        <p><span class="element-key">films: </span class="element-key"> <span>{{ person.films.toString() }}</span></p>
+                        <p><span class="element-key">species: </span class="element-key"> <span>{{ person.species }}</span></p>
+                        <p v-if="person.vehicles != 0"><span class="element-key">vehicles: </span class="element-key"> <span>{{ person.vehicles.toString() }}</span></p>
+                        <p v-if="person.starships != 0"><span class="element-key">starships: </span class="element-key"> <span>{{ person.starships.toString() }}</span></p>
+                        <p><span class="element-key">created: </span class="element-key"> <span>{{ person.created }}</span></p>
+                        <p><span class="element-key">edited: </span class="element-key"> <span>{{ person.edited }}</span></p>
+                        <p><span class="element-key">url: </span class="element-key"> <span>{{ person.url }}</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                peopleList: ''
+            },
+            methods: {
+                getElementsUrl: function() {
+                    for (let i = 0; i < this.peopleList.length; i++) {
+                        let url = this.peopleList[i].homeworld;
+                        axios
+                        .get(url)
+                        .then(response => {
+                            this.peopleList[i].homeworld = response.data.name;
+                        })
+                    }
+                    for (let i = 0; i < this.peopleList.length; i++) {
+                        let url = this.peopleList[i].films;
+                        for (let j = 0; j < url.length; j++) {
+                            axios
+                            .get(url[j])
+                            .then(response => {
+                                url[j] = ' ' + response.data.title;
+                            })
+                        }
+                    }
+                    for (let i = 0; i < this.peopleList.length; i++) {
+                        let url = this.peopleList[i].species;
+                        axios
+                        .get(url)
+                        .then(response => {
+                            this.peopleList[i].species = response.data.name;
+                        })
+                    }
+                    for (let i = 0; i < this.peopleList.length; i++) {
+                        let url = this.peopleList[i].vehicles;
+                        for (let j = 0; j < url.length; j++) {
+                            axios
+                            .get(url[j])
+                            .then(response => {
+                                url[j] = ' ' + response.data.name;
+                            })
+                        }
+                    }
+                    for (let i = 0; i < this.peopleList.length; i++) {
+                        let url = this.peopleList[i].starships;
+                        for (let j = 0; j < url.length; j++) {
+                            axios
+                            .get(url[j])
+                            .then(response => {
+                                url[j] = ' ' + response.data.name;
+                            })
+                        }
+                    }
+                }
+            },
+            mounted () {
+                axios
+                .get('https://swapi.co/api/people/')
+                .then(response => {
+                    this.peopleList = response.data.results;
+                    this.getElementsUrl();
+                    return this.peopleList;
+                })
+                .catch(function (error) {
+                    throw new Error('Unexpected status code received.');
+                });
+            },
+        })
+    </script>
+</body>
+</html>
